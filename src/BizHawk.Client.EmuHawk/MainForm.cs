@@ -3052,7 +3052,9 @@ namespace BizHawk.Client.EmuHawk
 
 				if (!InvisibleEmulation)
 				{
-					CaptureRewind(isRewinding);
+					// Allow the rewinder to re-capture the frame that was just loaded.
+					// This avoids some hacks inside the rewinder.
+					CaptureRewind(false);
 				}
 
 				// Set volume, if enabled

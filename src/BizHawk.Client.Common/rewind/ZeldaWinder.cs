@@ -236,27 +236,23 @@ namespace BizHawk.Client.Common
 				var index = _buffer.Count - 1;
 				RefillMaster(_buffer.GetState(index));
 				_buffer.InvalidateEnd(index);
-				_stateSource.LoadStateBinary(new BinaryReader(new MemoryStream(_master, 0, _masterLength, false)));
 				_count--;
 			}
-			else
+			_stateSource.LoadStateBinary(new BinaryReader(new MemoryStream(_master, 0, _masterLength, false)));
+			Work(() =>
 			{
-				_stateSource.LoadStateBinary(new BinaryReader(new MemoryStream(_master, 0, _masterLength, false)));
-				Work(() =>
+				var index = _buffer.Count - 1;
+				if (index >= 0)
 				{
-					var index = _buffer.Count - 1;
-					if (index >= 0)
-					{
-						RefillMaster(_buffer.GetState(index));
-						_buffer.InvalidateEnd(index);
-					}
-					else
-					{
-						_masterFrame = -1;
-					}
-					_count--;
-				});
-			}
+					RefillMaster(_buffer.GetState(index));
+					_buffer.InvalidateEnd(index);
+				}
+				else
+				{
+					_masterFrame = -1;
+				}
+				_count--;
+			});
 			return true;
 		}
 
