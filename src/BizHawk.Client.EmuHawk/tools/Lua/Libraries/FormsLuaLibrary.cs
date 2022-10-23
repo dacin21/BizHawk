@@ -356,7 +356,7 @@ namespace BizHawk.Client.EmuHawk
 			form.MaximizeBox = false;
 			form.FormBorderStyle = FormBorderStyle.FixedDialog;
 			form.Icon = SystemIcons.Application;
-			form.Owner = MainForm;
+			form.Owner = null; // allow the form to behind the main form, to not be in the way.
 			form.Show();
 
 			form.FormClosed += (o, e) =>
