@@ -35,6 +35,7 @@ namespace BizHawk.Client.EmuHawk
 
 		/// <remarks>only referenced from <see cref="LuaConsole"/></remarks>
 		bool IsTurboing { get; }
+		bool IsFastForwarding { get; }
 
 		int? PauseOnFrame { get; set; }
 

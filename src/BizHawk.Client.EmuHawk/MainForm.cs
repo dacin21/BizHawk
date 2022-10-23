@@ -908,6 +908,7 @@ namespace BizHawk.Client.EmuHawk
 		public bool IsSeeking => PauseOnFrame.HasValue;
 		private bool IsTurboSeeking => PauseOnFrame.HasValue && Config.TurboSeek;
 		public bool IsTurboing => InputManager.ClientControls["Turbo"] || IsTurboSeeking;
+		public bool IsFastForwarding => InputManager.ClientControls["Fast Forward"] || IsTurboing || InvisibleEmulation;
 
 		/// <summary>
 		/// Used to disable secondary throttling (e.g. vsync, audio) for unthrottled modes or when the primary (clock) throttle is taking over (e.g. during fast forward/rewind).
@@ -3057,15 +3058,14 @@ namespace BizHawk.Client.EmuHawk
 				runFrame = true;
 			}
 
-			var isFastForwarding = InputManager.ClientControls["Fast Forward"] || IsTurboing || InvisibleEmulation;
-			bool isRewinding = Rewind(ref runFrame, currentTimestamp, isFastForwarding, out var returnToRecording);
+			bool isRewinding = Rewind(ref runFrame, currentTimestamp, out var returnToRecording);
 
 			float atten = 0;
 
 			// BlockFrameAdvance (true when input it being editted in TAStudio) supercedes all other frame advance conditions
 			if ((runFrame || force) && !BlockFrameAdvance)
 			{
-				var isFastForwardingOrRewinding = isFastForwarding || isRewinding || Config.Unthrottled;
+				var isFastForwardingOrRewinding = IsFastForwarding || isRewinding || Config.Unthrottled;
 
 				if (isFastForwardingOrRewinding != _lastFastForwardingOrRewinding)
 				{
@@ -3186,7 +3186,7 @@ namespace BizHawk.Client.EmuHawk
 				{
 					_framesSinceLastFpsUpdate++;
 
-					CalcFramerateAndUpdateDisplay(currentTimestamp, isRewinding, isFastForwarding);
+					CalcFramerateAndUpdateDisplay(currentTimestamp, isRewinding);
 				}
 
 				if (Tools.IsLoaded<TAStudio>() &&
@@ -3227,7 +3227,7 @@ namespace BizHawk.Client.EmuHawk
 			Sound.UpdateSound(atten, DisableSecondaryThrottling);
 		}
 
-		private void CalcFramerateAndUpdateDisplay(long currentTimestamp, bool isRewinding, bool isFastForwarding)
+		private void CalcFramerateAndUpdateDisplay(long currentTimestamp, bool isRewinding)
 		{
 			double elapsedSeconds = (currentTimestamp - _timestampLastFpsUpdate) / (double)Stopwatch.Frequency;
 
@@ -3252,11 +3252,11 @@ namespace BizHawk.Client.EmuHawk
 			var fpsString = $"{_lastFpsRounded} fps";
 			if (isRewinding)
 			{
-				fpsString += IsTurboing || isFastForwarding ?
+				fpsString += IsTurboing || IsFastForwarding ?
 					" <<<<" :
 					" <<";
 			}
-			else if (isFastForwarding)
+			else if (IsFastForwarding)
 			{
 				fpsString += IsTurboing ?
 					" >>>>" :
@@ -4550,7 +4550,7 @@ namespace BizHawk.Client.EmuHawk
 			}
 		}
 
-		private bool Rewind(ref bool runFrame, long currentTimestamp, bool isFastForwarding, out bool returnToRecording)
+		private bool Rewind(ref bool runFrame, long currentTimestamp, out bool returnToRecording)
 		{
 			var isRewinding = false;
 
@@ -4631,7 +4631,7 @@ namespace BizHawk.Client.EmuHawk
 					// Try to avoid the previous frame:  We want to frame advance right after rewinding so we can give a useful
 					// framebuffer.
 					var frameToAvoid = Emulator.Frame - 1;
-					runFrame = Rewinder.Rewind(isFastForwarding);
+					runFrame = Rewinder.Rewind(IsFastForwarding);
 					if (Emulator.Frame == frameToAvoid)
 					{
 						// The rewinder was unable to satisfy our request.  Prefer showing a stale framebuffer to

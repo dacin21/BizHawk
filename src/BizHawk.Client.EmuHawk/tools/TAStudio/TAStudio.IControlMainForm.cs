@@ -94,17 +94,19 @@ namespace BizHawk.Client.EmuHawk
 
 		public bool Rewind()
 		{
+			// TODO: make this a config option.
+			int step = MainForm.IsFastForwarding ? 16 : 2;
 			// copy pasted from TasView_MouseWheel(), just without notch logic
 			if (MainForm.IsSeeking && !MainForm.EmulatorPaused)
 			{
-				MainForm.PauseOnFrame--;
+				MainForm.PauseOnFrame -= step;
 
 				// that's a weird condition here, but for whatever reason it works best
 				if (Emulator.Frame >= MainForm.PauseOnFrame)
 				{
 					MainForm.PauseEmulator();
 					StopSeeking();
-					GoToPreviousFrame();
+					GoToFrame(Emulator.Frame - step);
 				}
 
 				RefreshDialog();
@@ -112,7 +114,7 @@ namespace BizHawk.Client.EmuHawk
 			else
 			{
 				StopSeeking(); // late breaking memo: don't know whether this is needed
-				GoToPreviousFrame();
+				GoToFrame(Emulator.Frame - step);
 			}
 
 			return true;
