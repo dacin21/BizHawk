@@ -35,6 +35,12 @@
 		int TargetRewindInterval { get; }
 
 		/// <summary>
+		/// Number of rewind states to go back per press of the rewind button, without and with fast forwarding.
+		/// </summary>
+		int speedMultiplier { get; }
+		int fastSpeedMultiplier { get; }
+
+		/// <summary>
 		/// Specifies if the rewinder should accept states that are given out of order.
 		/// </summary>
 		bool AllowOutOfOrderStates { get; }
@@ -57,6 +63,8 @@
 		public bool UseFixedRewindInterval { get; set; } = false;
 		public int TargetFrameLength { get; set; } = 600;
 		public int TargetRewindInterval { get; set; } = 5;
+		public int speedMultiplier { get; set; } = 1;
+		public int fastSpeedMultiplier { get; set; } = 5;
 		public bool AllowOutOfOrderStates { get; set; } = true;
 
 		public IRewindSettings.BackingStoreType BackingStore { get; set; } = IRewindSettings.BackingStoreType.Memory;
